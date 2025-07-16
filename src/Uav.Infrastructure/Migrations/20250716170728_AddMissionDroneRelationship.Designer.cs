@@ -3,6 +3,7 @@ using System;
 using System.Collections.Generic;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 using Uav.Domain.ValueObjects;
@@ -13,9 +14,11 @@ using Uav.Infrastructure.Persistence;
 namespace Uav.Infrastructure.Migrations
 {
     [DbContext(typeof(UavDbContext))]
-    partial class UavDbContextModelSnapshot : ModelSnapshot
+    [Migration("20250716170728_AddMissionDroneRelationship")]
+    partial class AddMissionDroneRelationship
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder

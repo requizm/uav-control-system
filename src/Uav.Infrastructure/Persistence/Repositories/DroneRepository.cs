@@ -22,17 +22,22 @@ public class DroneRepository : IDroneRepository
     {
         return await _context.Drones.ToListAsync(cancellationToken);
     }
+    
+    public async Task<Drone?> GetByIdWithMissionAsync(Guid id, CancellationToken cancellationToken = default)
+    {
+        return await _context.Drones
+            .Include(d => d.CurrentMission)
+            .FirstOrDefaultAsync(d => d.Id == id, cancellationToken);
+    }
 
     public async Task AddAsync(Drone drone, CancellationToken cancellationToken = default)
     {
         await _context.Drones.AddAsync(drone, cancellationToken);
-        await _context.SaveChangesAsync(cancellationToken);
     }
 
     public async Task UpdateAsync(Drone drone, CancellationToken cancellationToken = default)
     {
         _context.Drones.Update(drone);
-        await _context.SaveChangesAsync(cancellationToken);
     }
 
     public async Task DeleteAsync(Guid id, CancellationToken cancellationToken = default)
@@ -41,7 +46,6 @@ public class DroneRepository : IDroneRepository
         if (drone is not null)
         {
             _context.Drones.Remove(drone);
-            await _context.SaveChangesAsync(cancellationToken);
         }
     }
 }

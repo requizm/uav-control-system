@@ -15,5 +15,10 @@ public class DroneConfiguration : IEntityTypeConfiguration<Drone>
             .HasMaxLength(100);
 
         builder.ComplexProperty(d => d.CurrentPosition);
+        
+        builder.HasOne(d => d.CurrentMission)
+            .WithOne(m => m.AssignedDrone)
+            .HasForeignKey<Drone>(d => d.CurrentMissionId)
+            .IsRequired(false);
     }
 }
