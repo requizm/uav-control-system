@@ -94,19 +94,19 @@ finally {
     # Always attempt to delete the created resources, even if the script failed midway.
     # The -ErrorAction SilentlyContinue prevents errors if the resource was never created.
     
-    if ($mission) {
-        try {
-            Invoke-RestMethod -Uri "$baseUrl/missions/$($mission.id)" -Method Delete -ErrorAction SilentlyContinue
-            Write-Host "✅ Mission $($mission.id) cleaned up."
-        } catch {}
-    }
-
-    if ($drone) {
-        try {
-            Invoke-RestMethod -Uri "$baseUrl/drones/$($drone.id)" -Method Delete -ErrorAction SilentlyContinue
-            Write-Host "✅ Drone $($drone.id) cleaned up."
-        } catch {}
-    }
+#     if ($mission) {
+#         try {
+#             Invoke-RestMethod -Uri "$baseUrl/missions/$($mission.id)" -Method Delete -ErrorAction SilentlyContinue
+#             Write-Host "✅ Mission $($mission.id) cleaned up."
+#         } catch {}
+#     }
+# 
+#     if ($drone) {
+#         try {
+#             Invoke-RestMethod -Uri "$baseUrl/drones/$($drone.id)" -Method Delete -ErrorAction SilentlyContinue
+#             Write-Host "✅ Drone $($drone.id) cleaned up."
+#         } catch {}
+#     }
     
     Write-Host "✅ Cleanup complete."
 }

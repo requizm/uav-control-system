@@ -10,5 +10,5 @@ public class Mission
     public Guid? AssignedDroneId { get; set; }
     public Drone? AssignedDrone { get; set; }
 
-    public required List<GpsCoordinate> Waypoints { get; set; }
+    public required List<GpsCoordinate> Waypoints { get; set; } = new();
 }

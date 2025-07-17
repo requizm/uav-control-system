@@ -14,7 +14,7 @@ using Uav.Infrastructure.Persistence;
 namespace Uav.Infrastructure.Migrations
 {
     [DbContext(typeof(UavDbContext))]
-    [Migration("20250716162740_InitialCreate")]
+    [Migration("20250717101559_InitialCreate")]
     partial class InitialCreate
     {
         /// <inheritdoc />
@@ -58,7 +58,8 @@ namespace Uav.Infrastructure.Migrations
 
                     b.HasKey("Id");
 
-                    b.HasIndex("CurrentMissionId");
+                    b.HasIndex("CurrentMissionId")
+                        .IsUnique();
 
                     b.ToTable("Drones");
                 });
@@ -67,6 +68,9 @@ namespace Uav.Infrastructure.Migrations
                 {
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<Guid?>("AssignedDroneId")
                         .HasColumnType("uuid");
 
                     b.Property<bool>("IsCompleted")
@@ -89,10 +93,15 @@ namespace Uav.Infrastructure.Migrations
             modelBuilder.Entity("Uav.Domain.Entities.Drone", b =>
                 {
                     b.HasOne("Uav.Domain.Entities.Mission", "CurrentMission")
-                        .WithMany()
-                        .HasForeignKey("CurrentMissionId");
+                        .WithOne("AssignedDrone")
+                        .HasForeignKey("Uav.Domain.Entities.Drone", "CurrentMissionId");
 
                     b.Navigation("CurrentMission");
+                });
+
+            modelBuilder.Entity("Uav.Domain.Entities.Mission", b =>
+                {
+                    b.Navigation("AssignedDrone");
                 });
 #pragma warning restore 612, 618
         }

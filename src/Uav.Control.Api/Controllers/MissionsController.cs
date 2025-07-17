@@ -11,7 +11,7 @@ public record CreateMissionDto(string Name, List<GpsCoordinate> Waypoints);
 
 public record AssignMissionDto(Guid DroneId);
 
-public record MissionDto(Guid Id, string Name, bool IsCompleted, Guid? AssignedDroneId);
+public record MissionDto(Guid Id, string Name, bool IsCompleted, Guid? AssignedDroneId, List<GpsCoordinate> Waypoints);
 
 [ApiController]
 [Route("api/[controller]")]
@@ -52,7 +52,7 @@ public class MissionsController : ControllerBase
         await _unitOfWork.SaveChangesAsync();
         _logger.LogInformation("New mission created with ID {MissionId}", mission.Id);
 
-        var missionDto = new MissionDto(mission.Id, mission.Name, mission.IsCompleted, null);
+        var missionDto = new MissionDto(mission.Id, mission.Name, mission.IsCompleted, null, []);
         return CreatedAtAction(nameof(GetMissionById), new { id = mission.Id }, missionDto);
     }
 
@@ -70,7 +70,7 @@ public class MissionsController : ControllerBase
         }
 
         // Map the entity to our DTO before sending.
-        var missionDto = new MissionDto(mission.Id, mission.Name, mission.IsCompleted, mission.AssignedDroneId);
+        var missionDto = new MissionDto(mission.Id, mission.Name, mission.IsCompleted, mission.AssignedDroneId, mission.Waypoints);
         return Ok(missionDto);
     }
 
@@ -123,5 +123,31 @@ public class MissionsController : ControllerBase
 
         _logger.LogInformation("Successfully assigned mission {MissionId} to drone {DroneId}", id, assignDto.DroneId);
         return Ok($"Mission {id} assigned to Drone {assignDto.DroneId}.");
+    }
+    
+    // POST: /api/missions/{id}/complete
+    [HttpPost("{id:guid}/complete")]
+    public async Task<IActionResult> CompleteMission(Guid id)
+    {
+        var mission = await _missionRepository.GetByIdWithDroneAsync(id);
+        if (mission is null)
+        {
+            return NotFound($"Mission with ID {id} not found.");
+        }
+
+        mission.IsCompleted = true;
+
+        if (mission.AssignedDrone is not null)
+        {
+            mission.AssignedDrone.Status = DroneStatus.Grounded;
+            mission.AssignedDrone.CurrentMissionId = null;
+            await _droneRepository.UpdateAsync(mission.AssignedDrone);
+        }
+
+        await _missionRepository.UpdateAsync(mission);
+        await _unitOfWork.SaveChangesAsync();
+    
+        _logger.LogInformation("Mission {MissionId} has been marked as complete.", id);
+        return Ok();
     }
 }

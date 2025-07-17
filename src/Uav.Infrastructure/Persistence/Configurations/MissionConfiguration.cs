@@ -1,6 +1,7 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 using Uav.Domain.Entities;
+using Uav.Domain.ValueObjects;
 
 namespace Uav.Infrastructure.Persistence.Configurations;
 

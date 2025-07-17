@@ -7,6 +7,8 @@ using Uav.Domain.ValueObjects;
 
 namespace Uav.Control.Api.Controllers;
 
+public record PatchDroneDto(GpsCoordinate? CurrentPosition, DroneStatus? Status);
+
 [ApiController]
 [Route("api/[controller]")] // /api/drones
 public class DronesController : ControllerBase
@@ -87,6 +89,36 @@ public class DronesController : ControllerBase
         await _unitOfWork.SaveChangesAsync();
 
         // Return 204 No Content, which is standard for a successful DELETE.
+        return NoContent();
+    }
+
+    // PATCH: /api/drones/{id}
+    [HttpPatch("{id:guid}")]
+    public async Task<IActionResult> PartiallyUpdateDrone(Guid id, [FromBody] PatchDroneDto patchDto)
+    {
+        var drone = await _droneRepository.GetByIdAsync(id);
+        if (drone is null)
+        {
+            return NotFound();
+        }
+
+        // Explicitly check which properties were provided in the request body
+        // and update the entity accordingly.
+        if (patchDto.CurrentPosition.HasValue)
+        {
+            drone.CurrentPosition = patchDto.CurrentPosition.Value;
+            _logger.LogInformation("Patching Drone {DroneId}: Set CurrentPosition.", id);
+        }
+
+        if (patchDto.Status.HasValue)
+        {
+            drone.Status = patchDto.Status.Value;
+            _logger.LogInformation("Patching Drone {DroneId}: Set Status to {Status}.", id, patchDto.Status.Value);
+        }
+
+        await _droneRepository.UpdateAsync(drone);
+        await _unitOfWork.SaveChangesAsync();
+
         return NoContent();
     }
 }

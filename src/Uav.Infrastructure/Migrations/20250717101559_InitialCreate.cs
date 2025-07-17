@@ -20,6 +20,7 @@ namespace Uav.Infrastructure.Migrations
                     Id = table.Column<Guid>(type: "uuid", nullable: false),
                     Name = table.Column<string>(type: "character varying(200)", maxLength: 200, nullable: false),
                     IsCompleted = table.Column<bool>(type: "boolean", nullable: false),
+                    AssignedDroneId = table.Column<Guid>(type: "uuid", nullable: true),
                     Waypoints = table.Column<List<GpsCoordinate>>(type: "jsonb", nullable: false)
                 },
                 constraints: table =>
@@ -52,7 +53,8 @@ namespace Uav.Infrastructure.Migrations
             migrationBuilder.CreateIndex(
                 name: "IX_Drones_CurrentMissionId",
                 table: "Drones",
-                column: "CurrentMissionId");
+                column: "CurrentMissionId",
+                unique: true);
         }
 
         /// <inheritdoc />
