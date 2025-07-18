@@ -7,7 +7,9 @@ using Uav.Domain.ValueObjects;
 
 namespace Uav.Control.Api.Controllers;
 
-public record PatchDroneDto(GpsCoordinate? CurrentPosition, DroneStatus? Status);
+public record CreateDroneDto(string ModelName);
+
+public record UpdateDroneDto(GpsCoordinate? CurrentPosition, DroneStatus? Status);
 
 [ApiController]
 [Route("api/[controller]")] // /api/drones
@@ -17,7 +19,6 @@ public class DronesController : ControllerBase
     private readonly IUnitOfWork _unitOfWork;
     private readonly ILogger<DronesController> _logger;
 
-    // The repository and logger are injected via the constructor by the DI container.
     public DronesController(IDroneRepository droneRepository, IUnitOfWork unitOfWork, ILogger<DronesController> logger)
     {
         _droneRepository = droneRepository;
@@ -48,8 +49,6 @@ public class DronesController : ControllerBase
     }
 
     // POST: /api/drones
-    public record CreateDroneDto(string ModelName);
-
     [HttpPost]
     public async Task<IActionResult> CreateDrone([FromBody] CreateDroneDto createDto)
     {
@@ -62,16 +61,15 @@ public class DronesController : ControllerBase
         {
             Id = Guid.NewGuid(),
             ModelName = createDto.ModelName,
-            BatteryPercentage = 100.0, // Default to a full battery
+            BatteryPercentage = 100.0,
             Status = DroneStatus.Grounded,
-            CurrentPosition = new GpsCoordinate(0, 0) // Default starting position
+            CurrentPosition = new GpsCoordinate(0, 0)
         };
 
         await _droneRepository.AddAsync(newDrone);
         await _unitOfWork.SaveChangesAsync();
         _logger.LogInformation("New drone created with ID: {DroneId}", newDrone.Id);
 
-        // Return a 201 Created response with a link to the new resource.
         return CreatedAtAction(nameof(GetDroneById), new { id = newDrone.Id }, newDrone);
     }
 
@@ -88,13 +86,12 @@ public class DronesController : ControllerBase
         await _droneRepository.DeleteAsync(id);
         await _unitOfWork.SaveChangesAsync();
 
-        // Return 204 No Content, which is standard for a successful DELETE.
         return NoContent();
     }
 
-    // PATCH: /api/drones/{id}
-    [HttpPatch("{id:guid}")]
-    public async Task<IActionResult> PartiallyUpdateDrone(Guid id, [FromBody] PatchDroneDto patchDto)
+    // PUT: /api/drones/{id}
+    [HttpPut("{id:guid}")]
+    public async Task<IActionResult> UpdateDrone(Guid id, [FromBody] UpdateDroneDto updateDto)
     {
         var drone = await _droneRepository.GetByIdAsync(id);
         if (drone is null)
@@ -102,18 +99,16 @@ public class DronesController : ControllerBase
             return NotFound();
         }
 
-        // Explicitly check which properties were provided in the request body
-        // and update the entity accordingly.
-        if (patchDto.CurrentPosition.HasValue)
+        if (updateDto.CurrentPosition.HasValue)
         {
-            drone.CurrentPosition = patchDto.CurrentPosition.Value;
-            _logger.LogInformation("Patching Drone {DroneId}: Set CurrentPosition.", id);
+            drone.CurrentPosition = updateDto.CurrentPosition.Value;
+            _logger.LogInformation("Updating Drone {DroneId}: Set CurrentPosition.", id);
         }
 
-        if (patchDto.Status.HasValue)
+        if (updateDto.Status.HasValue)
         {
-            drone.Status = patchDto.Status.Value;
-            _logger.LogInformation("Patching Drone {DroneId}: Set Status to {Status}.", id, patchDto.Status.Value);
+            drone.Status = updateDto.Status.Value;
+            _logger.LogInformation("Updating Drone {DroneId}: Set Status to {Status}.", id, updateDto.Status.Value);
         }
 
         await _droneRepository.UpdateAsync(drone);

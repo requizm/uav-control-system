@@ -26,7 +26,7 @@ public class MissionRepository : IMissionRepository
     public async Task<Mission?> GetByIdWithDroneAsync(Guid id, CancellationToken cancellationToken = default)
     {
         return await _context.Missions
-            .Include(m => m.AssignedDrone) // This tells EF Core to load the related Drone entity
+            .Include(m => m.AssignedDrone)
             .FirstOrDefaultAsync(m => m.Id == id, cancellationToken);
     }
 
@@ -35,6 +35,7 @@ public class MissionRepository : IMissionRepository
         await _context.Missions.AddAsync(mission, cancellationToken);
     }
 
+    // No need for async but keeping it for consistency
     public async Task UpdateAsync(Mission mission, CancellationToken cancellationToken = default)
     {
         _context.Missions.Update(mission);

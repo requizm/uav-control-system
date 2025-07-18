@@ -60,17 +60,15 @@ public class MissionsController : ControllerBase
     [HttpGet("{id:guid}")]
     public async Task<IActionResult> GetMissionById(Guid id)
     {
-        // To show the assigned drone, we need to modify our repository or use EF Core directly here.
-        // For simplicity, let's add a method to the repository.
-        var mission = await _missionRepository.GetByIdWithDroneAsync(id); // We will create this method next!
+        var mission = await _missionRepository.GetByIdWithDroneAsync(id);
 
         if (mission is null)
         {
             return NotFound();
         }
 
-        // Map the entity to our DTO before sending.
-        var missionDto = new MissionDto(mission.Id, mission.Name, mission.IsCompleted, mission.AssignedDroneId, mission.Waypoints);
+        var missionDto = new MissionDto(mission.Id, mission.Name, mission.IsCompleted, mission.AssignedDroneId,
+            mission.Waypoints);
         return Ok(missionDto);
     }
 
@@ -80,14 +78,12 @@ public class MissionsController : ControllerBase
     {
         _logger.LogInformation("Attempting to assign mission {MissionId} to drone {DroneId}", id, assignDto.DroneId);
 
-        // Use the new, more specific repository method
         var drone = await _droneRepository.GetByIdWithMissionAsync(assignDto.DroneId);
         if (drone is null)
         {
             return NotFound($"Drone with ID {assignDto.DroneId} not found.");
         }
 
-        // Your checks are now against a fully loaded object
         if (drone.Status != DroneStatus.Grounded)
         {
             return BadRequest($"Drone {drone.Id} is not available. Current status: {drone.Status}");
@@ -109,13 +105,10 @@ public class MissionsController : ControllerBase
             return BadRequest("Cannot assign a completed mission.");
         }
 
-        // --- Modify the state of the tracked entities ---
         drone.Status = DroneStatus.InFlight;
         drone.CurrentMissionId = mission.Id;
-        // We don't need to update the navigation property (drone.CurrentMission = mission)
         mission.AssignedDroneId = drone.Id;
 
-        // We still call UpdateAsync just to be explicit that the drone entity was modified.
         await _droneRepository.UpdateAsync(drone);
         await _missionRepository.UpdateAsync(mission);
 
@@ -124,7 +117,7 @@ public class MissionsController : ControllerBase
         _logger.LogInformation("Successfully assigned mission {MissionId} to drone {DroneId}", id, assignDto.DroneId);
         return Ok($"Mission {id} assigned to Drone {assignDto.DroneId}.");
     }
-    
+
     // POST: /api/missions/{id}/complete
     [HttpPost("{id:guid}/complete")]
     public async Task<IActionResult> CompleteMission(Guid id)
@@ -146,7 +139,7 @@ public class MissionsController : ControllerBase
 
         await _missionRepository.UpdateAsync(mission);
         await _unitOfWork.SaveChangesAsync();
-    
+
         _logger.LogInformation("Mission {MissionId} has been marked as complete.", id);
         return Ok();
     }

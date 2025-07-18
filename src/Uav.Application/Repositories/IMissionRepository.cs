@@ -2,9 +2,6 @@
 
 namespace Uav.Application.Repositories;
 
-/// <summary>
-/// Defines the contract for data persistence operations for the Mission entity.
-/// </summary>
 public interface IMissionRepository
 {
     Task<Mission?> GetByIdAsync(Guid id, CancellationToken cancellationToken = default);

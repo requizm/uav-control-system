@@ -35,6 +35,7 @@ public class DroneRepository : IDroneRepository
         await _context.Drones.AddAsync(drone, cancellationToken);
     }
 
+    // No need for async but keeping it for consistency
     public async Task UpdateAsync(Drone drone, CancellationToken cancellationToken = default)
     {
         _context.Drones.Update(drone);

@@ -2,9 +2,6 @@
 
 namespace Uav.Application.Repositories;
 
-/// <summary>
-/// Defines the contract for data persistence operations for the Drone entity.
-/// </summary>
 public interface IDroneRepository
 {
     Task<Drone?> GetByIdAsync(Guid id, CancellationToken cancellationToken = default);
